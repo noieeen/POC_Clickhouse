@@ -1,0 +1,41 @@
+# This is a generated file. Not intended for manual editing.
+version: "3.8"
+services:
+  servicea:
+    build:
+      context: "/Users/tharinchemchan/Dev Playground/LearnDotNet/POC_Clickhouse"
+      dockerfile: "ServiceA/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net8.0/ServiceA.dll"
+    environment:
+      ASPNETCORE_STATICWEBASSETS: "/app/bin/Debug/net8.0/ServiceA.staticwebassets.runtime.CT.json"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "noieeen/servicea:dev"
+    ports: []
+    volumes:
+    - "/Users/tharinchemchan/Dev Playground/LearnDotNet/POC_Clickhouse/ServiceA:/app:rw"
+    - "/Users/tharinchemchan/Dev Playground/LearnDotNet/POC_Clickhouse:/src:rw"
+    - "/Users/tharinchemchan/.nuget/packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  serviceb:
+    build:
+      context: "/Users/tharinchemchan/Dev Playground/LearnDotNet/POC_Clickhouse"
+      dockerfile: "ServiceB/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net8.0/ServiceB.dll"
+    environment:
+      ASPNETCORE_STATICWEBASSETS: "/app/bin/Debug/net8.0/ServiceB.staticwebassets.runtime.CT.json"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "noieeen/serviceb:dev"
+    ports: []
+    volumes:
+    - "/Users/tharinchemchan/Dev Playground/LearnDotNet/POC_Clickhouse/ServiceB:/app:rw"
+    - "/Users/tharinchemchan/Dev Playground/LearnDotNet/POC_Clickhouse:/src:rw"
+    - "/Users/tharinchemchan/.nuget/packages:/home/app/.nuget/packages"
+    working_dir: "/app"

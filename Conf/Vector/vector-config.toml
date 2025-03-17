@@ -1,0 +1,13 @@
+[sources.otel_logs]
+type = "vector"
+address = "0.0.0.0:8686"
+
+[sinks.clickhouse]
+type = "clickhouse"
+inputs = ["otel_logs"]
+database = "default"
+endpoint = "http://clickhouse:8123"
+table = "otel_logs"
+auth.user = "admin"
+auth.password = "admin123"
+compression = "none"

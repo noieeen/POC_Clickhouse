@@ -1,0 +1,12 @@
+[sources.otlp]
+type = "otlp"
+address = "0.0.0.0:8688"
+
+[sinks.clickhouse]
+type = "clickhouse"
+inputs = ["otlp"]
+database = "default"
+endpoint = "http://clickhouse:8123"
+table = "otel_logs"
+healthcheck = true
+compression = "none"

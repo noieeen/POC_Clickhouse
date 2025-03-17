@@ -1,0 +1,12 @@
+[sources.application_logs]
+type = "http_server"
+address = "0.0.0.0:8686"
+encoding.codec = "json"
+
+[sinks.clickhouse]
+type = "clickhouse"
+inputs = ["application_logs"]
+database = "logs"
+endpoint = "http://clickhouse:8123"
+table = "service_logs"
+skip_unknown_fields = true

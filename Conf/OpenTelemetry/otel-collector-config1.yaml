@@ -1,0 +1,84 @@
+#receivers:
+#  otlp:
+#    protocols:
+#      grpc:
+#exporters:
+#  jaeger:
+#    endpoint: "jaeger:14268"
+#    tls:
+#      insecure: true
+#  prometheus:
+#    endpoint: "0.0.0.0:8889"
+#service:
+#  pipelines:
+#    traces:
+#      receivers: [otlp]
+#      exporters: [jaeger]
+#    metrics:
+#      receivers: [otlp]
+#      exporters: [prometheus]
+
+#receivers:
+#  otlp:
+#    protocols:
+#      grpc:
+#        endpoint: 0.0.0.0:4317
+#      http:
+#        endpoint: 0.0.0.0:4318
+#
+#processors:
+#  batch:
+#    timeout: 1s
+#
+#exporters:
+#  clickhouse:
+#    endpoint: http://clickhouse:8123
+#    database: default
+#    logs_table_name: otel_logs
+#  jaeger:
+#    endpoint: "http://jaeger:14268/api/traces"
+#    tls:
+#      insecure: true
+#
+#service:
+#  pipelines:
+#    traces:
+#      receivers: [otlp]
+#      processors: [batch]
+#      exporters: [jaeger]
+#    logs:
+#      receivers: [otlp]
+#      processors: [batch]
+#      exporters: [clickhouse]
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+
+exporters:
+  otlphttp:
+    endpoint: "http://vector:8688"  # Send logs to Vector
+
+  jaeger:
+    endpoint: "http://jaeger:14268/api/traces"
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [jaeger]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp]  # Send logs to Vector

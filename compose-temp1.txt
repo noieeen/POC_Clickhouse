@@ -1,0 +1,104 @@
+﻿version: '3.8'
+
+services:
+  servicea:
+    image: noieeen/servicea
+    build:
+      context: .
+      dockerfile: ServiceA/Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - LOGGING_SERVER=http://vector:8686
+    depends_on:
+      - otel-collector
+      - vector
+  
+  serviceb:
+    image: noieeen/serviceb
+    build:
+      context: .
+      dockerfile: ServiceB/Dockerfile
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - LOGGING_SERVER=http://vector:8686
+    depends_on:
+      - otel-collector
+      - vector
+  
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./Conf/Prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+  
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource
+    volumes:
+      - ./data/grafana-data:/var/lib/grafana
+    depends_on:
+      - clickhouse
+  
+  otel-collector:
+#    image: otel/opentelemetry-collector:latest
+    image: otel/opentelemetry-collector-contrib:latest
+    command: [ "--config=/etc/otel-collector-config.yaml" ]
+    volumes:
+      - ./Conf/OpenTelemetry/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"  # OTLP gRPC receiver
+    depends_on:
+      - jaeger
+      - clickhouse
+  
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    ports:
+      - "16686:16686"  # UI
+      - "14268:14268"  # Collector
+  
+  vector:
+    image: timberio/vector:0.45.0-debian
+    volumes:
+      - ./Conf/Vector/vector-config.toml:/etc/vector/vector.toml
+    ports:
+      - "8686:8686"
+    depends_on:
+      - clickhouse
+  
+  
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - ./data/clickhouse-data:/var/lib/clickhouse
+      - ./Conf/ClickHouse/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - CLICKHOUSE_USER=admin
+      - CLICKHOUSE_PASSWORD=admin123
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    restart: unless-stopped
+
+volumes:
+  grafana-data:
+  clickhouse-data:
