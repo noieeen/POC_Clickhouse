@@ -1,7 +1,7 @@
 ﻿version: '3.8'
 
 services:
-  servicea:
+  service_a:
     image: noieeen/servicea
     build:
       context: .
@@ -18,7 +18,7 @@ services:
     networks:
       clickhouse-net:
   
-  serviceb:
+  service_b:
     image: noieeen/serviceb
     build:
       context: .

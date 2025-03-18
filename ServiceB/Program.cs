@@ -41,6 +41,7 @@ builder.Services.AddOpenTelemetry()
     .WithMetrics(metricProviderBuilder =>
     {
         metricProviderBuilder
+            .AddPrometheusExporter()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
             .AddOtlpExporter(options =>
@@ -92,7 +93,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
-
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
