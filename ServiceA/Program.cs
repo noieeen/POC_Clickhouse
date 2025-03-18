@@ -50,20 +50,15 @@ builder.Services.AddOpenTelemetry()
         tracerProviderBuilder
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
-            .AddOtlpExporter(options =>
-            {
-                options.Endpoint = new Uri("http://otel-collector:50051");
-            });
+            .AddOtlpExporter(options => { options.Endpoint = new Uri("http://otel-collector:50051"); });
     })
     .WithMetrics(metricProviderBuilder =>
     {
         metricProviderBuilder
+            .AddPrometheusExporter()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation()
-            .AddOtlpExporter(options =>
-            {
-                options.Endpoint = new Uri("http://otel-collector:50051");
-            });
+            .AddOtlpExporter(options => { options.Endpoint = new Uri("http://otel-collector:50051"); });
     });
 
 // 🔹 Configure Logging (Vector)
@@ -73,16 +68,13 @@ builder.Logging.AddOpenTelemetry(logging =>
     logging.IncludeFormattedMessage = true;
     logging.IncludeScopes = true;
     logging.ParseStateValues = true;
-    logging.AddOtlpExporter(options =>
-    {
-        options.Endpoint = new Uri("http://vector:8686");
-    });
+    logging.AddOtlpExporter(options => { options.Endpoint = new Uri("http://vector:8686"); });
 });
 
 builder.Services.AddLogging(logging =>
 {
     logging.ClearProviders();
-    logging.AddJsonConsole(options => 
+    logging.AddJsonConsole(options =>
     {
         options.IncludeScopes = true;
         options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";

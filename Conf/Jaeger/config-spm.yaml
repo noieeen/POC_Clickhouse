@@ -1,0 +1,24 @@
+# Declare an exporter for metrics produced by the connector.
+# For example, a Prometheus server may be configured to scrape 
+# the metrics from this endpoint.
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+
+# Declare spanmetrics connector.
+connectors:
+  spanmetrics:
+    # any connector configuration options
+    ...
+
+# Enable the spanmetrics connector to bridge 
+# the traces pipeline into the metrics pipeline.
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [jaeger_storage_exporter, spanmetrics]
+    metrics/spanmetrics:
+      receivers: [spanmetrics]
+      exporters: [prometheus]
