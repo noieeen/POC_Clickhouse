@@ -10,13 +10,13 @@ services:
       - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:50051
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - LOGGING_SERVER=http://vector:8686
     depends_on:
       - otel-collector
       - vector
-    networks:
-      clickhouse-net:
+  #    networks:
+  #      - clickhouse-net
   
   service_b:
     image: noieeen/serviceb
@@ -27,13 +27,13 @@ services:
       - "5002:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:50051
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - LOGGING_SERVER=http://vector:8686
     depends_on:
       - otel-collector
       - vector
-    networks:
-      clickhouse-net:
+  #    networks:
+  #      clickhouse-net:
   
   prometheus:
     image: prom/prometheus:latest
@@ -41,8 +41,9 @@ services:
       - ./Conf/Prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
-    networks:
-      clickhouse-net:
+    restart: always
+  #    networks:
+  #      - clickhouse-net
 
   grafana:
     image: grafana/grafana:latest
@@ -54,8 +55,8 @@ services:
       - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource
     volumes:
       - ./data/grafana-data:/var/lib/grafana
-    depends_on:
-      - clickhouse
+  #    depends_on:
+  #      - clickhouse
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest  # Using "contrib" version
@@ -69,8 +70,8 @@ services:
       - vector
       - jaeger
       - prometheus
-    networks:
-      clickhouse-net:
+  #    networks:
+  #      - clickhouse-net
   #  jaeger:
   #    image: jaegertracing/all-in-one:latest
   #    environment:
@@ -96,8 +97,9 @@ services:
     ]
     volumes:
       - ./Conf/Jaeger/config.yaml:/jaeger/config.yaml
-    networks:
-      clickhouse-net:
+    restart: always
+  #    networks:
+  #      - clickhouse-net
 
   vector:
     image: timberio/vector:0.45.0-debian
@@ -108,8 +110,8 @@ services:
     #      - "8688:8688"
     depends_on:
       - clickhouse
-    networks:
-      clickhouse-net:
+  #    networks:
+  #      - clickhouse-net
 
   clickhouse:
     image: clickhouse/clickhouse-server:latest
@@ -127,12 +129,12 @@ services:
       nofile:
         soft: 262144
         hard: 262144
-    networks:
-      clickhouse-net:
+#    networks:
+#      - clickhouse-net
 
 volumes:
   grafana-data:
   clickhouse-data:
 
-networks:
-  clickhouse-net:
+#networks:
+#  clickhouse-net:

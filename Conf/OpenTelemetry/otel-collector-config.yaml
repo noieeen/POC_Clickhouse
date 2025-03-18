@@ -2,25 +2,33 @@ receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: 0.0.0.0:4317
       http:
-        endpoint: 0.0.0.0:4318
 
 processors:
   batch:
 
 exporters:
-  otlphttp:
-    endpoint: "http://clickhouse:8123"
-  debug:
+  otlp/clickhouse:
+    endpoint: "clickhouse:9000" # ClickHouse address
+    protocol: grpc
+    tls:
+      insecure: true
+  otlp/jaeger:
+    endpoint: "jaeger:4317" # Jaeger address
+    tls:
+      insecure: true
+  prometheusremotewrite:
+    endpoint: "http://prometheus:9090/api/v1/write"
+    
 
+#Defines the data flow for traces and metrics.
 service:
   pipelines:
     traces:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [otlphttp]
-    logs:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [debug]
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ otlp/jaeger, otlp/clickhouse ]
+    metrics:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ prometheusremotewrite, otlp/clickhouse ]

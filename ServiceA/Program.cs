@@ -43,6 +43,10 @@ var builder = WebApplication.CreateBuilder(args);
 //     options.AddOtlpExporter(exporterOptions => { exporterOptions.Endpoint = new Uri("http://vector:8686"); });
 // });
 
+// 🔹 Configure Resource Name
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resourceBuilder =>
+        resourceBuilder.AddService(serviceName: Assembly.GetCallingAssembly().GetName().Name!));
 // 🔹 Configure OpenTelemetry Tracing
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracerProviderBuilder =>
@@ -50,15 +54,32 @@ builder.Services.AddOpenTelemetry()
         tracerProviderBuilder
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
-            .AddOtlpExporter(options => { options.Endpoint = new Uri("http://otel-collector:50051"); });
+            .AddSqlClientInstrumentation()
+            .AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri(builder.Configuration.GetValue("OTEL_EXPORTER_OTLP_ENDPOINT",
+                    "http://otel-collector:4317"));
+            });
     })
     .WithMetrics(metricProviderBuilder =>
     {
         metricProviderBuilder
             .AddPrometheusExporter()
+            // Metrics provides by ASP.NET Core in .NET 8
+            .AddMeter("Microsoft.AspNetCore.Hosting")
+            .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
             .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
-            .AddOtlpExporter(options => { options.Endpoint = new Uri("http://otel-collector:50051"); });
+            .AddProcessInstrumentation()
+            .AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri(builder.Configuration.GetValue("OTEL_EXPORTER_OTLP_ENDPOINT",
+                    "http://otel-collector:4317"));
+            });
+
+        //Optional Prometheus Export
+        metricProviderBuilder.AddPrometheusHttpListener();
     });
 
 // 🔹 Configure Logging (Vector)

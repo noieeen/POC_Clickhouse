@@ -1,3 +1,14 @@
+[sources.prometheus_scrape]
+type = "prometheus_scrape"
+endpoints = ["http://my-application:9464/metrics"] #.Net application prometheus endpoint if used.
+scrape_interval_secs = 15
+
+[sinks.prometheus_remote_write]
+type = "prometheus_remote_write"
+inputs = ["prometheus_scrape"]
+endpoint = "http://prometheus:9090/api/v1/write"
+
+#####################
 [sources.otel_logs]
 type = "vector"
 address = "0.0.0.0:8686"
